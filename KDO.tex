@@ -5,7 +5,8 @@
 \usepackage{setspace, fancyhdr, float, xfrac, longtable, cite}
 \usepackage{wrapfig, lscape, rotating, epstopdf, url}
 \usepackage{array, booktabs, listings, latexsym}
-\usepackage{tikz, calc}
+\usepackage{tikz, standalone, calc}
+\usetikzlibrary{shapes,arrows, decorations.markings}
 %====================New Thm Declarations====================
 \newtheorem{Thm}{Theorem}
 \newtheorem{Cor}{Corollary}
@@ -1289,7 +1290,7 @@ How are these properties discretized and what libraries and functions are used? 
 \begin{figure}[H]
 \centering
 \includegraphics[width=4in,height=2.25in]{Figures/no_image.eps}
-\caption{Minimum variance points versus time}
+\caption{Minimum variance points versus time graph}
 \label{quad_red_balls}
 \end{figure}
 
@@ -1317,69 +1318,16 @@ The three observers, KDO, NDO, and STO are tested on quadcopter under similar co
 
 \subsection{Simulation Results}
 To exhaustively compare the three different observers, the simulated system was subjected to four different disturbances. The disturbances were considered as a "gust of wind". To compare the effectiveness of the observers, disturbances of interest were chaotic in nature, while to compare the convergence rates of NDO and STO, disturbances which are constant and linear with respect to time were considered. 
-\tikzstyle{block} = [draw, fill=blue!20, rectangle, minimum height=3em, minimum width=6em, align=center]
+
 \begin{figure}
-\begin{centering}
-	{
-    \begin{tikzpicture}
-    
-    \node [block] at (1,9) (deisred_trajectory) {Desired Trajectory};
-    \node [block] at (4,6) (position_controller) {Position\\Controller};
-    \node [block, minimum height=20em] at (12,3) (quad) {Quadrotor\\Dynamic\\Model};
-    \node [block] at (12,9) (quad) {Simulated\\Disturbances};
-    \node [block] at (7,3) (observer) {Observer};    
-    \node [block] at (4,0) (attitude_controller) {Attitude\\Controller};
-    \node [block] at (1,3) (desired_orientation) {Desired\\Orientation\\Calculation};
-    
-    % To and forth between Controllers and Quadcopter Model 
-    \draw [->] (5.05,6.2) -- node [midway, above] {$U_1$} (10.95,6.2);
-    \draw [<-] (5.05,5.8) -- node [midway, below] {$x$, $\dot{x}$, $y$, $\dot{y}$, $z$, $\dot{z}$} (10.95,5.8);
-    \draw [->] (5.05,0.2) -- node [midway, above] {$U_2$, $U_3$, $U_4$} (10.95,0.2);
-    \draw [<-] (5.05,-0.2) -- node [midway, below] {$\phi$, $\dot{\phi}$, $\theta$, $\dot{\theta}$, $\psi$, $\dot{\psi}$} (10.95,-0.2);
-    
-    % To the Observer 
-    \draw [->] (6.2,6.2) -- node [midway, left] {} (6.2,3.53);
-    \draw [->] (6.6,5.8) -- node [midway, right] {} (6.6,3.53);
-    \draw [->] (6.2,-0.2) -- node [midway, left] {} (6.2,2.47);
-    \draw [->] (6.6,0.2) -- node [midway, right] {} (6.6,2.47);
-    
-    
-    % Postion Controller to Desired Orientation and Observer
-    \draw [-] (4,5.47) -- node [midway, left] {$u_x$, $u_y$} (4,3);
-    \draw [->] (4,3) -- node [midway, below] {} (5.95,3);
-    \draw [->] (4,3) -- node [midway, below] {} (2.06,3);
-    
-    % Desired Traj to Desired Orientation
-    \draw [->] (1,8.47) -- node [midway, left] {$p_d=[x_d,y_d,z_d,\psi]$} (1,3.67);
-    % Desired Traj to Position Controller
-    \draw [-] (2.55,9) -- node [midway, above] {} (4,9);
-    \draw [->] (4,9) -- node [midway, right] {$p_d$} (4,6.53);
-    
-    % Desired Orientation Calculator to Attitude COntroller
-    \draw [-] (1, 2.33) -- node [midway, below] {} (1,0);
-    \draw [->] (1,0) -- node [midway, below] {$\phi_d$, $\theta_d$} (2.94,0);
-    
-    % Disturbances to the PosCon and AttCon
-    \draw [<-] (4.3,5.47) -- node [midway, left] {} (4.3,3.3);
-    \draw [-] (4.3,3.3) -- node [midway, above] {$\hat{d}$} (5.95,3.3);
-    \draw [<-] (4.3,0.5) -- node [midway, left] {} (4.3,2.7);
-    \draw [-] (4.3,2.7) -- node [midway, below] {$\hat{d}$} (5.95,2.7);
-	
-	% External disturbance arrow 
-	 \draw [->] (12, 8.47) -- node [midway, right] {$d$} (12, 6.52);
-	
-	% Dots at the connections
-    \filldraw[black] (4,3) circle (0.8pt) node[anchor=west] {};
-    \filldraw[black] (6.2,6.2) circle (0.8pt) node[anchor=west] {};
-    \filldraw[black] (6.6,5.8) circle (0.8pt) node[anchor=west] {};
-    \filldraw[black] (6.2,-0.2) circle (0.8pt) node[anchor=west] {};
-    \filldraw[black] (6.6,0.2) circle (0.8pt) node[anchor=west] {};
-    \end{tikzpicture}
-    \label{block_simulation}
-	\caption{Block diagram of the control system of quadcopter}	
+	\begin{centering}{
+		\input{Tikz/Block/block.tex}
+		\caption{Block diagram of different quadcopter components in simulation }	
 	}
-\end{centering}
+	\end{centering}	
+	\label{block_simulation}
 \end{figure}
+
 \subsubsection{Disturbance Model: Chaotic 1}
 This section presents results of simulations carried under a chaotic system. The disturbances are of the form,
 \begin{equation}
@@ -1732,9 +1680,9 @@ The estimation algorithm was developed and implemented by a former Graduate stud
 
 \underline{The quadcopter hardware primarily contains the following components:}\\
 \textbf{Companion Computer:} This is an onboard Linux computer with ROS that connects to a wifi network that is shared with the ground station computer which enables the ground station to establish a UDP communication protocol via SSH. For this project the companion computer used is Odroid XU4. The Odroid XU4 is low weight (38g) and has Samsung Exynos5422 Cortex-A15 2Ghz and Cortex-A7 Octa core CPUs with 2Gbyte LPDDR3 RAM which can run different versions of Linux and Android. This companion computer also communicates with a flight control board which has integrated motion sensors like accelerometer, gyroscope, magnetometer and barometer. The companion computer requires a companion link to communicate with the flight controller. In this case the MAVLink suite of communication protocols is used to transmit and receive the data between the companion computer and the flight controller. The flight controller used for this project is Pixhawk 3DR. The two components communicate with FTDI USB breakout and level shifters. 
-\begin{figure}[H]
+\begin{figure}
 \centering
-\includegraphics[width=3in,height=4.83in]{Figures/practical/offboard_control_ros.eps}
+\input{Tikz/Distributed/distributed.tex}
 \caption{Block diagram of components of the MAVROS, MAVLink and quadcopter setup}
 \label{offboard_control_ros_EPS}
 \end{figure}
@@ -1770,7 +1718,7 @@ A brief explanation of the different components in the ROS Computation Graph lev
 \end{itemize}
 \textbf{MAVLink:} MAVLink is lightweight messaging protocol for resource constrained systems. It is used for the groundstation computer to communicate with the PIXHAWK drone using the locally setup Wi-fi. The MAVLink protocol communicates the messages received in the topic \texttt{mavlink/} and then serializes it into a over-the-wire format.\\
 \textbf{MAVROS:} MAVROS is a MAVLink extendable communication package that provides the necessary nodes and software for a computer running ROS(or MAVLink enabled ground station computer) to communicate with MAVLink enabled quadrotors. This is especially useful in making distributed computing systems in conjugation with the drone such that the computationally intensive software can run on computers that can execute the computations within the tine constraints imposed by a real time system.\\
-\textbf{Custom Message Transmission:} Upon simulation it was determined that the Kernel computations require much faster hardware to keep up with the time constraints of a real time system which is susceptible to instability under delayed computations of appropriate control signals. As a result, off-board computation of disturbance estimates from the Kernel Differential Observer was carried out. The computations were done on the same groundstation computer that is used to run the computer vision algorithms on the video obtained from the Kinect. The disturbance estimates are then transmitted to the 
+\textbf{Custom Message Transmission:} Upon simulation it was determined that the Kernel computations require much faster hardware to keep up with the time constraints of a real time system which is susceptible to instability under delayed computations of appropriate control signals. As a result, off-board computation of disturbance estimates from the Kernel Differential Observer was carried out. The computations were done on the same groundstation computer that is used to run the computer vision algorithms on the video obtained from the Kinect. The disturbance estimates are then transmitted to the The disturbance estimates are then transmitted to the Quadcopter with the MAVLink suite through WiFi.\\
 \textbf{uORB Messaging:} \\
 
 \begin{figure}[H]
