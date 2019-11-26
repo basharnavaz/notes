@@ -104,9 +104,8 @@ Editors for the above languages are: PyCharm 2.0, Eclipse, Atom
 
 \section{Quadcopter Model}
 The quadcopter is an Unmanned Aerial Vehicle (UAV) under the class of Micro Air Vehicles(MAV). Historically research has been carried out on these class of aerial vehicles due to the advantages of flying in narrow or difficult to access areas while offering vertical take-off and landing capabilities. 
-\begin{figure}[H]
-\centering
-\includegraphics[width=4in,height=2.25in]{Figures/no_image.eps}
+\begin{figure}
+\centerline{\input{Tikz/Quad_Dynamics/quad.tex}}
 \caption{Quadcopter model}
 \label{quad_red_balls}
 \end{figure}
@@ -177,7 +176,7 @@ $\Psi(\Theta)$ and $\Phi(\Theta,\dot{\Theta})$ are defined as
 
 The equations \eqref{eq:dynamic_basic_translation} and \eqref{eq:dynamic_basic_rotation} can be written as,
 
-\begin{align}\label{eq2}
+\begin{align}\label{eq:quad_dyanmics}
 \begin{aligned}
 \ddot{\phi}&=r_1\dot{\theta}\dot{\psi}-r_2\dot{\theta}w+q_1U_2+d_\phi\\
 \ddot{\theta}&=r_3\dot{\phi}\dot{\psi}+r_4\dot{\phi}w+
@@ -896,6 +895,7 @@ It should be noted that this estimation problem is different in the sense it doe
 
 Once the states and their higher derivatives are computed, the estimates of the disturbances are obtained from the dynamical equations stated above (equa 4). 
 \begin{equation}
+	\label{eq:KDO}
     \begin{aligned}
     \hat{d_\phi}&=\hat{\ddot{\phi}}-(r_1\hat{\dot{\theta}}\hat{\dot{\psi}}-r_2\hat{\dot{\theta}}w+q_1U_2)\\
     \hat{d_\theta}&=\hat{\ddot{\theta}}-(r_3\hat{\dot{\phi}}\hat{\dot{\psi}}+r_4\hat{\dot{\phi}}w+q_2U_3)\\
@@ -1317,21 +1317,20 @@ This has been described in detail in \cite{fethalla2018sliding}. Summarize for t
 The three observers, KDO, NDO, and STO are tested on quadcopter under similar conditions of external disturbances and same control algorithms. This is tested in simulations and on a quadcopter. The simulation conditions along with the results and the quadcopter setup with the results are presented in this section. 
 
 \subsection{Simulation Results}
-To exhaustively compare the three different observers, the simulated system was subjected to four different disturbances. The disturbances were considered as a "gust of wind". To compare the effectiveness of the observers, disturbances of interest were chaotic in nature, while to compare the convergence rates of NDO and STO, disturbances which are constant and linear with respect to time were considered. 
+To exhaustively compare the three different observers, the oberservs were implemented in conjugation with control algorithms to and tested in simulations and real life and on a real quadcopter in the Robotics Lab at ETS. The simulations were carried out in SIMULINK under four different kinds of disturbances which were considered as a "gust of wind". To compare the effectiveness of the observers, disturbances of interest were chaotic in nature, while to compare the convergence rates of NDO and STO, disturbances which are constant and linear with respect to time were considered. 
 
 \begin{figure}
-	\begin{centering}{
-		\input{Tikz/Block/block.tex}
-		\caption{Block diagram of different quadcopter components in simulation }	
-	}
-	\end{centering}	
+	\centerline{\input{Tikz/Block/block.tex}}
+	\caption{Block diagram of different quadcopter components in simulation}	
 	\label{block_simulation}
 \end{figure}
+Figure \ref{block_simulation} gives a general idea of how the different components of the quadcopter are linked in simulation. The four different disturbances are given by the equations, \eqref{eq:dist_1}, \eqref{eq:dist_2}, \eqref{eq:dist_3} and \eqref{eq:dist_4}; while the quadcopter dynamics are modelled on based on the equations presented in \eqref{eq:quad_dyanmics}. The KDO is modeled based on the equations described in \eqref{eq:KDO} and similarly the NDO and STO are modeled based on \textbf{INSERT EQUATIONS HERE}. The attitude controller and position controller compute the signals based on the equations \textbf{INSERT EQUATIONS HERE}. The desired trajectory is given by piecewise functions \textbf{FIND THE DESIRED TRAJ EQUATIONS}
 
 \subsubsection{Disturbance Model: Chaotic 1}
 This section presents results of simulations carried under a chaotic system. The disturbances are of the form,
 \begin{equation}
 d_i = k.a_i(t)sin(\omega t-\phi_i)
+\label{eq:dist_1}
 \end{equation}
 where $a_i$ for $i=1...6$, are modeled based on two independent Lorenz chaotic systems, $a_i$ for $i=1,2,3$ and the second system for $i=4,5,6$. The system in this case is defined by the set of ordinary equations, 
 \begin{subequations}
@@ -1536,6 +1535,7 @@ It is also observed that among the two chaotic disturbances, the attitude and po
 This section presents results of simulations carried under a chaotic system. The disturbances are again of the form,
 \begin{equation}
 d_i = k.a_i(t)sin(\omega t-\phi_i)
+\label{eq:dist_2}
 \end{equation}
 where $a_i$ for $i=1...6$, are modeled based on two independent Lorenz chaotic systems $a_i$ for $i=1,2,3$ and the second system for $i=4,5,6$. The system in this case is defined by the set of ordinary equations, 
 \begin{subequations}
@@ -1609,6 +1609,7 @@ The cases where the observers estimate the disturbances with the worst performan
 The same quadrotor system was also simulated with disturbances that increased or decreased with time. The disturbances were of the form, 
 \begin{equation}
 d_i = k_i.t
+\label{eq:dist_3}
 \end{equation}
 where the vector $k=[1,-3,2,1.5,2.5,-2.5]*10^{-3}$. 
 For the set of linear disturbances the estimation results are summarized in the table below. The convergence time is the time taken by NDO and STO to have an estimation error within the range $\pm0.1$ when the observers are initialized with the initial observer state of 0.45 for each component. 
@@ -1634,6 +1635,7 @@ $d_\psi$  &  41.543 & 0.052   & 2.487  & 0.0005 & 0     & $2.504*10^{-6}$\\
 Similar to the case of applying linear disturbances, linear disturbances were applied to the same quadrotor system where the disturbances remained constant with time. The disturbances were of the form, 
 \begin{equation}
 d_i = c_i
+\label{eq:dist_4}
 \end{equation}
 where the vector $c=[0.1,0.3,-0.2,-0.05,-0.25,0.15]$. 
 For the set of constant disturbances the estimation results are summarized in the table below. The convergence time is the time taken by NDO and STO to have an estimation error within the range $\pm0.1$ when the observers are initialized with the initial observer state of 0.45 for each component.
@@ -1681,8 +1683,7 @@ The estimation algorithm was developed and implemented by a former Graduate stud
 \underline{The quadcopter hardware primarily contains the following components:}\\
 \textbf{Companion Computer:} This is an onboard Linux computer with ROS that connects to a wifi network that is shared with the ground station computer which enables the ground station to establish a UDP communication protocol via SSH. For this project the companion computer used is Odroid XU4. The Odroid XU4 is low weight (38g) and has Samsung Exynos5422 Cortex-A15 2Ghz and Cortex-A7 Octa core CPUs with 2Gbyte LPDDR3 RAM which can run different versions of Linux and Android. This companion computer also communicates with a flight control board which has integrated motion sensors like accelerometer, gyroscope, magnetometer and barometer. The companion computer requires a companion link to communicate with the flight controller. In this case the MAVLink suite of communication protocols is used to transmit and receive the data between the companion computer and the flight controller. The flight controller used for this project is Pixhawk 3DR. The two components communicate with FTDI USB breakout and level shifters. 
 \begin{figure}
-\centering
-\input{Tikz/Distributed/distributed.tex}
+\centerline{\input{Tikz/Distributed/distributed.tex}}
 \caption{Block diagram of components of the MAVROS, MAVLink and quadcopter setup}
 \label{offboard_control_ros_EPS}
 \end{figure}
@@ -1723,7 +1724,7 @@ A brief explanation of the different components in the ROS Computation Graph lev
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=6in,height=6in]{Figures/theory/rosgraph.eps}
+\centerline{\includegraphics[width=6in,height=6in]{Figures/theory/rosgraph.eps}}
 \caption{ROS computation graph of MAVROS nodes and topics on the ground station computer}
 \label{rosgraph}
 \end{figure}
