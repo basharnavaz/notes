@@ -46,7 +46,7 @@ Engineers are often interested in controlling the behaviour of their surrounding
 
 
 \subsection{Literature Review}
-Realtime implementation of kernel methods was not done before. Explore properties and develop theorems of kernel estimator to make realtime computation possible.
+Realtime implementation of kernel methods was not done before. Explore properties and develop theorems of kernel estimator to make realtime computation possible.Notice that the simulations run about NDO and STO had simple sinusoidal disturbances and the observers having the knowledge of the initial conditions. 
 
 \subsubsection{Nonlinear Disturbance Observer}
 Nonlinear Disturbance Observer (NDO) is an asymptotic observer which was described and analysed in [cite NMHJ2018] and applied to the quadrotor system in [nuradeen]. The translational disturbances which affect the position of the quarotor is is described by the following equations: 
@@ -840,7 +840,7 @@ $t^*_k  \in (t_{k},t_{k+1})$. Such an estimation problem lends itself directly t
 
 %\begin{theorem}  \label{Th1}
 \textbf{Theorem:} Let $[a,b]$ be any interval on $\mathbb{R}$. There exist kernel functions $K_{y}$,  $K_{u}$,  defined on $[a,b] \times [a,b]$ that yield compact 
-integral operators acting on $L^2[a,b]$, such that the differential system \eqref{eqn.43a}	has an equivalent integral representation for $t \in [a,b]$
+integral operators acting on $L^2[a,b]$, such that the differential system \eqref{eqn.LTI_model}	has an equivalent integral representation for $t \in [a,b]$
 \begin{align}
 & y(t) = \int_a^b K_{y}(t,\tau) y(\tau) \ d \tau + \int_a^b K_{u}(t,\tau) u(\tau) \ d \tau \label{eq:eval}
 \end{align}
@@ -906,8 +906,8 @@ Once the states and their higher derivatives are computed, the estimates of the 
     \end{aligned}
 \end{equation}
 
-\subsection{Theorems to speed up KDO calculations}
-
+\subsection{Theorems and Corrolaries  to speed up KDO calculations}
+\subsubsection{Computational implementation of the kernel estimation}
 The double sided kernel method was introduced in [First Debarshi paper] where the expression for estimate value at a particular instant $t$, denoted by $y_E(t)$ from the measured value $y_M(t)$ is given by the Equation (\ref{y_E}). 
 
 \begin{equation}
@@ -1066,8 +1066,10 @@ It is hoped that this significant reduction in computation should enable the alg
 The above method can be applied to the Backward Kernel and result in a Double Sided Kernel Matrix which is a constant matrix.
 
 Furthermore, since the measurement vector is anticipated to be noisy and discrete; sophisticated algorithms to compute integrals need not be used. It is believed that Trapeziodal method for integrating should yield satisfactory results. What remains to be decided is the relative position of the instant $t$ with respect to sliding window. One factor which can be used to decide is the allowable latency in detection, i.e. $y_M(b)$ represents the latest measurement in real time and a delay of $(b-t)$ is induced by this estimator.
-\\ \textbf{Closed form optimization to bypass numerical optimization}\\
-This part discusses algebraic parameter estimation employing \textit{repeated} integration of the system output. The parameter estimation is explained through an example of a general 2nd order system as shown in \textbf{reference: Fliess2004c}. But, before proceed to the development of the kernel, we must first understand \textit{linear identifiablilty}. This is an useful and important property for a model to estimate the parameters using a system of equations.
+ \subsubsection{Closed form optimization to bypass numerical optimization}
+In Shaunak's thesis the parameter estimation relied on optimization of the the error using ridge regression. In this part we develop closed form deterministic expressions to bypass the ridge regression optimization which has an indefinite convergence rate. Using this method to estimate the parameters allows us to deploy this method in real time systems with time constraints on computation time. We understanding what \textit{linear identifiablilty} is and how it is related to algebraic parameter estimation.  
+
+%This part discusses algebraic parameter estimation employing \textit{repeated} integration of the system output. The parameter estimation is explained through an example of a general 2nd order system as shown in \textbf{reference: Fliess2004c}. But, before proceed to the development of the kernel, we must first understand \textit{linear identifiablilty}. This is an useful and important property for a model to estimate the parameters using a system of equations.
 \par A system is said to be \textit{linearly identifiable} if and only if \textbf{reference: Fliess2004c}, 
 \begin{equation}\label{eqn.28.1}
 \begin{split}
@@ -1175,9 +1177,239 @@ and
 Q_{1}(t) = q(t), \; Q_{2}(t) = \int q(t) \mathrm{d}t, \; Q_{3} = \int\limits^{(2)} q(t) \mathrm{d}t
 \end{align*}
 Using the above system of equations, we can estimate the unknown parameters while at the same time due to the low pass filtering property, the noise can be alleviated.\\
-%==========================================================
-\textbf{Analysis of the stochastic properties of white noise under kernel transformation and integration}
 
+
+An alternate approach can be used which is developed by \textbf{Kumar's thesis}. 
+
+
+Consider a third order linear time invariant system whose characteristic polynomial is as given below:
+\begin{equation}\label{eqn.100}
+y^{(4)}(t) + a_{3}y^{(3)}(t) + a_{2}y^{(2)}(t) + a_{1}y^{(1)}(t) + a_{0}y(t) = 0
+\end{equation}
+And whose \textit{forward kernel} is,
+\begin{equation}\label{eqn.101}
+\begin{split}
+	& K_{F,y}(t,\tau)\\
+	&=\bigg[16(\tau-a)^{3}-a_3(\tau-a)^{4}\bigg]\\
+	&+(t-\tau)\bigg[-72(\tau-a)^2 + 12a_3(\tau-a)^3 - a_2(\tau-a)^4\bigg]\\
+	&+\frac{(t-\tau)^2}{2}\bigg[96(\tau-a) - 36a_3(\tau-a)^2 + 8a_2(\tau-a)^3 -a_1(\tau-a)^4\bigg]\\
+	&+\frac{(t-\tau)^3}{6}\bigg[-24 + 24a_3(\tau-a) - 12a_2(\tau-a)^2 + 4a_1(\tau-a)^3 - a_0(\tau-a)^4\bigg]	
+\end{split}
+\end{equation}
+and the \textit{backward kernel} is given as follows,
+\begin{equation}\label{eqn.102}
+\begin{split}
+	&K_{B,y}(t,\tau)\\
+	&=\bigg[16(b-\tau)^{3} + a_3(b-\tau)^{4}\bigg]\\
+	&+(t-\tau)\bigg[72(b-\tau)^{2} + 12a_3(b-\tau)^{3} + a_2(b-\tau)^{4}\bigg]\\
+	&+\frac{(t-\tau)^{2}}{2}\bigg[96(b-\tau)+36a_3(b-\tau)^{2} + 8a_2(b-\tau)^{3} + a_1(b-\tau)^{4}\bigg]\\
+	&+\frac{(t-\tau)^{3}}{6}\bigg[24+24a_3(b-\tau)+12a_2(b-\tau)^{2}+4a_1(b-\tau)^{3}+a_0(b-\tau)^{4}\bigg]
+\end{split}
+\end{equation}
+and the \textit{backward kernel} is given as follows,
+
+%We know from subsection \cref{derivation-kernel} that,
+We know from the derivation of kernel expressions that, 
+\begin{equation}\label{eqn.103}
+\bigg[(t-a)^4+(b-t)^4\bigg]y(t) = \int_{a}^{b} K_{DS}(t,\tau)y(\tau)\mathrm{d}\tau
+\end{equation}
+as well as,
+\begin{equation}\label{eqn.104}
+\int_{a}^{b} K_{DS}(t,\tau)y(\tau)\mathrm{d}\tau = \int_{a}^{t}K_{F}(t,\tau)y(\tau)\mathrm{d}\tau + \int_{t}^{b}K_{B}(t,\tau)y(\tau)\mathrm{d}\tau 
+\end{equation}
+\par Let,
+\begin{equation}\label{eqn.105}
+\int_{a}^{b} K_{DS}(t,\tau)y(\tau)\mathrm{d}\tau = P
+\end{equation}
+From \eqref{eqn.103} and \eqref{eqn.105} we get \eqref{eqn.106}
+\begin{equation}\label{eqn.106}
+\sum\bigg[\big[(t-a)^4 + (b-t)^4\big]y(t)\bigg] = P
+\end{equation}
+Bringing $P$ from the R.H.S to the L.H.S in \eqref{eqn.106} and applying the $l_2$ norm yields,
+\begin{equation}\label{eqn.107}
+\sum\bigg[\bigg[\big[(t-a)^4 + (b-t)^4\big]y(t)\bigg] - P\bigg]^2 = W 
+\end{equation}
+Differentiating \eqref{eqn.107} with respect to $a_{0}$,$a_{1}$ and $a_{2}$ separately we get the equations from \eqref{eqn.108} - \eqref{eqn.110}
+\begin{equation}\label{eqn.108}
+\sum 2\bigg[\big[(t-a)^4 + (b-t)^4\big]y(t) - P\bigg] \bigg[\frac{\mathrm{d}P}{\mathrm{d}a_{0}}\bigg] = \frac{\mathrm{d}W}{\mathrm{d}a_{0}}  
+\end{equation}
+\begin{equation}\label{eqn.109}
+\sum 2\bigg[\big[(t-a)^4 + (b-t)^4\big]y(t) - P\bigg] \bigg[\frac{\mathrm{d}P}{\mathrm{d}a_{1}}\bigg] = \frac{\mathrm{d}W}{\mathrm{d}a_{1}}  
+\end{equation}
+\begin{equation}\label{eqn.110}
+\sum 2\bigg[\big[(t-a)^4 + (b-t)^4\big]y(t) - P\bigg] \bigg[\frac{\mathrm{d}P}{\mathrm{d}a_{2}}\bigg] = \frac{\mathrm{d}W}{\mathrm{d}a_{2}} 
+\end{equation}
+\begin{equation}\label{eqn.110.5}
+\sum 2\bigg[\big[(t-a)^4 + (b-t)^4\big]y(t) - P\bigg] \bigg[\frac{\mathrm{d}P}{\mathrm{d}a_{3}}\bigg] = \frac{\mathrm{d}W}{\mathrm{d}a_{3}} 
+\end{equation}
+from \eqref{eqn.104} and \eqref{eqn.105}, $P$ can also be written as,
+\begin{equation}\label{eqn.111}
+P = \int_{a}^{t} K_{F}(t,\tau)y(\tau)\mathrm{d}\tau + \int_{t}^{b} K_{B}(t,\tau)y(\tau)\mathrm{d}\tau
+\end{equation}
+We can express $K_{F}$ and $K_{B}$ as $M_{1}(\tau)$ and $M_{2}(\tau)$ which are in turn expressed as follows,
+\begin{equation}\label{eqn.112}
+M_{1} = M_{3} + M_{4} + M_{5} + M_{6} + M_{7}
+\end{equation}
+\begin{equation}\label{eqn.113}
+M_{2} = M_{8} + M_{9} + M_{10} + M_{11} + M_{12}
+\end{equation}
+where $M_{3}$ and $M_{8}$ are the expressions containing $a_{0}$; $M_{4}$ and $M_{9}$ are the expressions containing $a_{1}$; $M_{5}$ and $M_{10}$ are the expressions containing $a_{2}$; $M_{6}$ and $M_{11}$ are the expressions containing $a_{3}$ and lastly, $M_{7}$ and $M_{12}$ are the constant terms containing none of the parameters. Now we can rewrite  \eqref{eqn.108}- \eqref{eqn.110.5} as follows, 
+\begin{equation}\label{eqn.114}
+\begin{aligned}[t]
+	\begin{aligned}[b]
+	a_{0} \sum \bigg[-\int_{a}^{t}\frac{M_{3}}{a_{0}}\mathrm{d}\tau-\int_{t}^{b}\frac{M_{8}}{a_{0}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{0}}\bigg] + a_{1} \sum \bigg[-\int_{a}^{t}\frac{M_{4}}{a_{1}}\mathrm{d}\tau-\int_{t}^{b}\frac{M_{9}}{a_{1}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{0}}\bigg] \\
+	a_{2} \sum \bigg[-\int_{a}^{t}\frac{M_{5}}{a_{2}}\mathrm{d}\tau-\int_{a}^{t}\frac{M_{10}}{a_{2}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{0}}\bigg] + a_{3} \sum \bigg[-\int_{a}^{t}\frac{M_{6}}{a_{2}}\mathrm{d}\tau-\int_{a}^{t}\frac{M_{11}}{a_{2}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{0}}\bigg] \\ 
+	{} +\sum\bigg[\big[(t-a)^4+(b-t)^4\big]y(t) -\int_{a}^{t}{M_{7}}\mathrm{d}\tau-\int_{t}^{b}{M_{12}}\mathrm{d}\tau \bigg]\bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{0}}\bigg]
+	\end{aligned}
+	& =
+	\begin{aligned}[t]
+	0
+	\end{aligned}
+\end{aligned}
+\end{equation}
+\begin{equation}\label{eqn.115}
+\begin{aligned}[t]
+	\begin{aligned}[b]
+	a_{0} \sum \bigg[-\int_{a}^{t}\frac{M_{3}}{a_{0}}\mathrm{d}\tau-\int_{t}^{b}\frac{M_{8}}{a_{0}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{1}}\bigg] + a_{1} \sum \bigg[-\int_{a}^{t}\frac{M_{4}}{a_{1}}\mathrm{d}\tau-\int_{t}^{b}\frac{M_{9}}{a_{1}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{1}}\bigg] \\
+	a_{2} \sum \bigg[-\int_{a}^{t}\frac{M_{5}}{a_{2}}\mathrm{d}\tau-\int_{a}^{t}\frac{M_{10}}{a_{2}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{1}}\bigg] + a_{3} \sum \bigg[-\int_{a}^{t}\frac{M_{6}}{a_{2}}\mathrm{d}\tau-\int_{a}^{t}\frac{M_{11}}{a_{2}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{1}}\bigg] \\ 
+	{} +\sum\bigg[\big[(t-a)^4+(b-t)^4\big]y(t) -\int_{a}^{t}{M_{7}}\mathrm{d}\tau-\int_{t}^{b}{M_{12}}\mathrm{d}\tau \bigg]\bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{1}}\bigg]
+	\end{aligned}
+	& =
+	\begin{aligned}[t]
+	0
+	\end{aligned}
+\end{aligned}
+\end{equation}
+\begin{equation}\label{eqn.116}
+\begin{aligned}[t]
+	\begin{aligned}[b]
+	a_{0} \sum \bigg[-\int_{a}^{t}\frac{M_{3}}{a_{0}}\mathrm{d}\tau-\int_{t}^{b}\frac{M_{8}}{a_{0}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{2}}\bigg] + a_{1} \sum \bigg[-\int_{a}^{t}\frac{M_{4}}{a_{1}}\mathrm{d}\tau-\int_{t}^{b}\frac{M_{9}}{a_{1}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{2}}\bigg] \\
+	a_{2} \sum \bigg[-\int_{a}^{t}\frac{M_{5}}{a_{2}}\mathrm{d}\tau-\int_{a}^{t}\frac{M_{10}}{a_{2}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{2}}\bigg] + a_{3} \sum \bigg[-\int_{a}^{t}\frac{M_{6}}{a_{2}}\mathrm{d}\tau-\int_{a}^{t}\frac{M_{11}}{a_{2}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{2}}\bigg] \\ 
+	{} +\sum\bigg[\big[(t-a)^4+(b-t)^4\big]y(t) -\int_{a}^{t}{M_{7}}\mathrm{d}\tau-\int_{t}^{b}{M_{12}}\mathrm{d}\tau \bigg]\bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{2}}\bigg]
+	\end{aligned}
+	& =
+	\begin{aligned}[t]
+	0
+	\end{aligned}
+\end{aligned}
+\end{equation}
+\begin{equation}\label{eqn.116.5}
+\begin{aligned}[t]
+	\begin{aligned}[b]
+	a_{0} \sum \bigg[-\int_{a}^{t}\frac{M_{3}}{a_{0}}\mathrm{d}\tau-\int_{t}^{b}\frac{M_{8}}{a_{0}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{3}}\bigg] + a_{1} \sum \bigg[-\int_{a}^{t}\frac{M_{4}}{a_{1}}\mathrm{d}\tau-\int_{t}^{b}\frac{M_{9}}{a_{1}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{3}}\bigg] \\
+	a_{2} \sum \bigg[-\int_{a}^{t}\frac{M_{5}}{a_{2}}\mathrm{d}\tau-\int_{a}^{t}\frac{M_{10}}{a_{2}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{3}}\bigg] + a_{3} \sum \bigg[-\int_{a}^{t}\frac{M_{6}}{a_{2}}\mathrm{d}\tau-\int_{a}^{t}\frac{M_{11}}{a_{2}}\mathrm{d}\tau\bigg] \bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{3}}\bigg] \\ 
+	{} +\sum\bigg[\big[(t-a)^4+(b-t)^4\big]y(t) -\int_{a}^{t}{M_{7}}\mathrm{d}\tau-\int_{t}^{b}{M_{12}}\mathrm{d}\tau \bigg]\bigg[\frac{-\mathrm{d}P}{\mathrm{d}a_{3}}\bigg]
+	\end{aligned}
+	& =
+	\begin{aligned}[t]
+	0
+	\end{aligned}
+\end{aligned}
+\end{equation}
+Substitute the following into the equations \eqref{eqn.114}-\eqref{eqn.116.5},
+\begin{equation}\label{eqn.117}
+W_{1} = \frac{\mathrm{d}P}{\mathrm{d}a_{0}}
+\end{equation}
+\begin{equation}\label{eqn.118}
+W_{2} = \frac{\mathrm{d}P}{\mathrm{d}a_{1}}
+\end{equation}
+\begin{equation}\label{eqn.119}
+W_{3} = \frac{\mathrm{d}P}{\mathrm{d}a_{2}}
+\end{equation}
+\begin{equation}\label{eqn.119.5}
+W_{4} = \frac{\mathrm{d}P}{\mathrm{d}a_{3}}
+\end{equation}
+and
+\begin{equation}\label{eqn.120}
+V_{1} = \bigg[\int_{a}^{t}\frac{M_{3}}{a_{0}} \mathrm{d}\tau + \int_{t}^{b}\frac{M_{8}}{a_{0}} \mathrm{d}\tau \bigg]
+\end{equation}
+\begin{equation}\label{eqn.121}
+V_{2} = \bigg[\int_{a}^{t}\frac{M_{4}}{a_{1}} \mathrm{d}\tau + \int_{t}^{b}\frac{M_{9}}{a_{1}} \mathrm{d}\tau \bigg]
+\end{equation}
+\begin{equation}\label{eqn.122}
+V_{3} = \bigg[\int_{a}^{t}\frac{M_{5}}{a_{1}} \mathrm{d}\tau + \int_{t}^{b}\frac{M_{10}}{a_{1}} \mathrm{d}\tau \bigg]
+\end{equation}
+\begin{equation}\label{eqn.122.5}
+V_{4} = \bigg[\int_{a}^{t}\frac{M_{6}}{a_{1}} \mathrm{d}\tau + \int_{t}^{b}\frac{M_{11}}{a_{1}} \mathrm{d}\tau \bigg]
+\end{equation}
+\begin{equation}\label{eqn.123}
+V_{5} = \bigg[\int_{a}^{t} M_{7} \mathrm{d}\tau + \int_{t}^{b} M_{12} \mathrm{d}\tau \bigg]
+\end{equation}
+
+We can combine equations \eqref{eqn.117}-\eqref{eqn.123} as follows,
+\begin{equation}\label{eqn.124}
+V_{6} = -V_{1}\, \times \,-W_{1}\;; V_{7} = -V_{2}\, \times \,-W_{1}\;; V_{8} = -V_{3}\, \times \,-W_{1}\;;\\ V_{9} = -V_{4}\, \times \,-W_{1}\;; V_{10} = -V_{5}\, \times \,-W_{1}
+\end{equation}
+\begin{equation}\label{eqn.125}
+V_{11} = -V_{1}\, \times \,-W_{2}\;; V_{12} = -V_{2}\, \times \,-W_{2}\;; V_{13} = -V_{3}\, \times \,-W_{2}\;; V_{14} = -V_{4}\, \times \,-W_{2}\;; V_{15} = -V_{5}\, \times \,-W_{2}
+\end{equation}
+\begin{equation}\label{eqn.126}
+V_{16} = -V_{1}\, \times \,-W_{3}\;; V_{17} = -V_{2}\, \times \,-W_{3}\;; V_{18} = -V_{3}\, \times \,-W_{3}\;; V_{19} = -V_{4}\, \times \,-W_{3}\;; V_{20} = -V_{5}\, \times \,-W_{3}
+\end{equation}
+\begin{equation}\label{eqn.126.5}
+V_{21} = -V_{1}\, \times \,-W_{4}\;; V_{22} = -V_{2}\, \times \,-W_{4}\;; V_{23} = -V_{3}\, \times \,-W_{4}\;; V_{24} = -V_{4}\, \times \,-W_{4}\;; V_{25} = -V_{5}\, \times \,-W_{4}
+\end{equation}
+\par Now, expressing the above equations as a linear combination of the unknown parameters yields,
+\begin{equation}\label{eqn.127}
+a_{0} V_{6} + a_{1}V_{7} + a_{2}V_{8} + a_{3}V_{9} = -V_{10}
+\end{equation}
+\begin{equation}\label{eqn.128}
+a_{0} V_{11} + a_{1}V_{12} + a_{2}V_{13} + a_{3}V_{14} = -V_{15}
+\end{equation}
+\begin{equation}\label{eqn.129}
+a_{0} V_{16} + a_{1}V_{17} + a_{2}V_{18} + a_{3}V_{19} = -V_{20}
+\end{equation}
+\begin{equation}\label{eqn.129.5}
+a_{0} V_{21} + a_{1}V_{22} + a_{2}V_{23} + a_{3}V_{24} = -V_{25}
+\end{equation}
+\par The above set of simultaneous linear equations can be expressed in the form of \eqref{28.1} as a system of matrices as follows,
+\begin{equation}\label{eqn.130}
+\begin{bmatrix}
+	V_{6}&V_{7}&V_{8}&V_{9}\\
+	V_{11}&V_{12}&V_{13}&V_{14}\\
+	V_{16}&V_{17}&V_{18}&V_{19}\\
+	V_{21}&V_{22}&V_{23}&V_{24}\\
+\end{bmatrix}
+\begin{bmatrix}
+	a_{0}\\
+	a_{1}\\
+	a_{2}\\
+	a_{3}
+\end{bmatrix}
+=\begin{bmatrix}
+	-V_{10}\\
+	-V_{15}\\
+	-V_{10}\\
+	-V_{25}
+\end{bmatrix}
+\end{equation}
+This allows us to compute the unknown parameters as,
+\begin{equation}\label{eqn.131}
+\begin{bmatrix}
+	a_{0}\\
+	a_{1}\\
+	a_{2}\\
+	a_{3}
+\end{bmatrix}
+={\begin{bmatrix}
+	V_{6}&V_{7}&V_{8}&V_{9}\\
+	V_{11}&V_{12}&V_{13}&V_{14}\\
+	V_{16}&V_{17}&V_{18}&V_{19}\\
+	V_{21}&V_{22}&V_{23}&V_{24}\\
+\end{bmatrix}}^{-1}
+\begin{bmatrix}
+	-V_{10}\\
+	-V_{15}\\
+	-V_{10}\\
+	-V_{25}
+\end{bmatrix}
+\end{equation}
+
+
+
+%==========================================================
+\subsubsection{Stochastic properties of white noise under Kernel Transformation}
+%\textbf{Analysis of the stochastic properties of white noise under kernel transformation and integration}
 In this part we see how the white noise induced though the output measurements behaves under kernel transformations.
 
 \begin{equation}
