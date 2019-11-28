@@ -907,166 +907,7 @@ Once the states and their higher derivatives are computed, the estimates of the 
 \end{equation}
 
 \subsection{Theorems and Corrolaries  to speed up KDO calculations}
-\subsubsection{Computational implementation of the kernel estimation}
-The double sided kernel method was introduced in [First Debarshi paper] where the expression for estimate value at a particular instant $t$, denoted by $y_E(t)$ from the measured value $y_M(t)$ is given by the Equation (\ref{y_E}). 
-
-\begin{equation}
-\begin{split}
-y_E(t) = \int\limits_{a}^{b}K(t,\tau) y_M(\tau)\, \mathrm{d}\tau
-\end{split}
-\label{y_E}
-\end{equation}
-\begin{equation}
-K(t,\tau) \triangleq \left\{
-\begin{array}{lr}
-\frac{1}{[(t-a)^4+(b-t)^4])} K_{F}(t,\tau) & for \quad \tau \le t\\
-\frac{1}{[(t-a)^4+(b-t)^4])} K_{B}(t,\tau) & for \quad \tau > t
-\end{array}
-\right.
-\label{K}
-\end{equation}
-\begin{equation}\label{Kf}
-\begin{split}
-	& K_{F,y}(t,\tau)\\
-	&=\bigg[16(\tau-a)^{3}-a_3(\tau-a)^{4}\bigg]\\
-	&+(t-\tau)\bigg[-72(\tau-a)^2 + 12a_3(\tau-a)^3 - a_2(\tau-a)^4\bigg]\\
-	&+\frac{(t-\tau)^2}{2}\bigg[96(\tau-a) - 36a_3(\tau-a)^2 + 8a_2(\tau-a)^3 -a_1(\tau-a)^4\bigg]\\
-	&+\frac{(t-\tau)^3}{6}\bigg[-24 + 24a_3(\tau-a) - 12a_2(\tau-a)^2 + 4a_1(\tau-a)^3 - a_0(\tau-a)^4\bigg]	
-\end{split}
-\end{equation}
-\begin{equation}\label{eqn.73}
-\begin{split}
-	&K_{B,y}(t,\tau)\\
-	&=\bigg[16(b-\tau)^{3} + a_3(b-\tau)^{4}\bigg]\\
-	&+(t-\tau)\bigg[72(b-\tau)^{2} + 12a_3(b-\tau)^{3} + a_2(b-\tau)^{4}\bigg]\\
-	&+\frac{(t-\tau)^{2}}{2}\bigg[96(b-\tau)+36a_3(b-\tau)^{2} + 8a_2(b-\tau)^{3} + a_1(b-\tau)^{4}\bigg]\\
-	&+\frac{(t-\tau)^{3}}{6}\bigg[24+24a_3(b-\tau)+12a_2(b-\tau)^{2}+4a_1(b-\tau)^{3}+a_0(b-\tau)^{4}\bigg]
-\end{split}
-\end{equation}
-
-At the moment we focus on the Forward Kernel given by the Equation (\ref{Kf}).This expression is now modified to reduce computational complexities by working under the following assumptions:
-\begin{enumerate}
-\item A sliding window approach is used
-\item Length of the sliding window is fixed i.e. $(b-a)=\textrm{constant}$
-\item The relative position of the instant, $(t)$,  at which the estimate is to be obtained is fixed with respect to $a\textrm{ and }b \textrm{ i.e. }$ $$ (t-a)= a' \textrm{ constant, and } (b-t)=b'\textrm{ constant}$$  
-\end{enumerate}
-Equation (\ref{Kf}) is broken down as:
-
-\begin{equation}
-K_{F}(t,\tau) \triangleq \quad 
-\begin{bmatrix}
-0  &  0  &   0   &  16    &   a_3   \\
-0  &  0  &   72   & 12a_3  &   a_2  \\
-0  &  96 & 36a_3 &  8a_2  &   a_1   \\
-24 &  6  & 12a_2 &  4a_1   &   a_0  
-\end{bmatrix}
-\begin{bmatrix}
-     - 1       \\
- (\tau - a)    \\
--(\tau - a)^2  \\
- (\tau - a)^3  \\
--(\tau - a)^4  \\
-\end{bmatrix}
-\begin{bmatrix}
-1  & (t-\tau) & \frac{(t-\tau)^2}{2} & \frac{(t-\tau)^6}{6}
-\end{bmatrix}
-\label{Kf_2}
-\end{equation}
-\begin{equation}
-= [A][a][t] 
-\end{equation}
-
-The matrix $[A]$ is a constant as the parameters $a_0, a_1, a_2$ are not changing while the estimation is being performed. The matrices $[a] \textrm{ and } [t]$ are functions of $(\tau-a) \textrm{ and } (t-\tau)$. These values are then dependent on the relative position in the window. This allows us to calculate the value of the Forward Kernel at each relative point in the window. Once this is computed it need not be computed again. 
-
-\begin{figure}[H]
-\begin{centering}
-	{
-		\begin{tikzpicture}
-			\draw[|-|,semithick] (0,0) -- (10,0);
-			\draw[|-,semithick] (5.3,0) -- (3.4,0);
-			\draw[|-,semithick] (8.7,0) -- (8.8,0);
-			\draw (0,-0.5) node {$a$};
-			\draw (10,-0.5) node {$b$};
-			\draw (5.3,-0.5) node {$\tau$};
-			\draw (8.7,-0.5) node {$t$};
-				
-			\draw (-2, 0) node {Values};
-			\draw[-,dashed] (-1,0.5) -- (-1,-4);
-		
-			\draw (-2,-1.5) node {$(\tau-a)|^{a}_{t}$};	
-			\draw (0,-1.5) node {$0$};	
-			\draw (1,-1.5) node {$T$};
-			\draw (2,-1.5) node {$2T$};
-			\draw (3,-1.5) node {$3T$};
-			\draw (8.7,-1.5) node {$(t-a)$};
-	
-			\draw (-2,-2.5) node {$(t-\tau)|^{a}_{t}$};	
-			\draw (0,-2.5) node {$(t-a)$};	
-			\draw (3,-2.5) node {$(t-a)-3T$};
-			\draw (8.7,-3) node {$0$};	
-		\end{tikzpicture}
-		\caption{Diagram showing $\tau -a$ and $t-\tau$ remain constant with respect to the position in the sliding window as time progresses}
-		\label{sliding_array}
-	}
-\end{centering}
-\end{figure}
-
-The Forward Kernel as a function of position in sliding window array can be written as:
-\begin{equation}
-K_{F}(i) \triangleq \quad
-\begin{bmatrix}
-0  &  0  &   0   &  16    &   a_3   \\
-0  &  0  &   72   & 12a_3  &   a_2  \\
-0  &  96 & 36a_3 &  8a_2  &   a_1   \\
-24 &  6  & 12a_2 &  4a_1   &   a_0  
-\end{bmatrix}
-\begin{bmatrix}
-  -1     \\
- (iT)    \\
--(iT)^2  \\
- (iT)^3  \\
--(iT)^4  \\
-\end{bmatrix}
-\begin{bmatrix}
-1  & \big((n-i)T\big) & \frac{\Big(\big((n-i)T\big)\Big)^2}{2} & \frac{\Big(\big((n-i)T\big)\Big)^3}{6}
-\end{bmatrix}
-\label{Kfi}
-\end{equation}
-where,
-\begin{subequations}
-\begin{align}
-a+ (\texttt{ number of samples in window * } T)&= b \\ 
-a+ (\texttt{t position in window * } T) &= t \\
-a+ (\texttt{i}*T) &= \tau
-\end{align}
-\end{subequations}
-
-The integrand in the forward estimate of $y$ which was previously represented as
-$K_F(t,\tau) y_M(\tau)$, 
-(in the expression $y_{FE}(t) =\int\limits_{a}^{b}K_F(t,\tau) y_M(\tau)\, \mathrm{d}\tau $ ), 
-can be written as 
-$$ \vec{y}_{KFM} = [K_F] \textrm{ } \vec{y}_M(i)$$
-where 
-\begin{equation*}
-[K_F] =
-\begin{bmatrix}
-    K_F(1) &    0   &   0    & \dots  &    0    & \dots  &   0 \\
-      0    & K_F(2) &   0    & \dots  &    0    & \dots  &   0 \\
-    \vdots & \vdots & \vdots & \ddots & \vdots  & \dots  &   0 \\
-      0    &   0    &   0    & \dots  &  K_F(i) & \dots  &   0 \\ 
-    \vdots & \vdots & \vdots & \vdots & \vdots  & \ddots &   0 \\
-      0    &   0    &   0    & \dots  &    0    & \dots  &   K_F(n) \\
-\end{bmatrix}
-\end{equation*}
-and $K_F(i)$ is given by Equation (\ref{Kfi})
-
-It can be seen that, compared to the previous scheme where the complete Kernel was calculated and derived in each iteration, we just have to compute the Forward Kernel matrix once and then linearly multiply with the incoming measurement vector $\vec{y}_M$to give the vector $\vec{y}_{KFM}$.
-It is hoped that this significant reduction in computation should enable the algorithm to be implemented in real time. 
-
-The above method can be applied to the Backward Kernel and result in a Double Sided Kernel Matrix which is a constant matrix.
-
-Furthermore, since the measurement vector is anticipated to be noisy and discrete; sophisticated algorithms to compute integrals need not be used. It is believed that Trapeziodal method for integrating should yield satisfactory results. What remains to be decided is the relative position of the instant $t$ with respect to sliding window. One factor which can be used to decide is the allowable latency in detection, i.e. $y_M(b)$ represents the latest measurement in real time and a delay of $(b-t)$ is induced by this estimator.
- \subsubsection{Closed form optimization to bypass numerical optimization}
+ \subsubsection{Practical identifiability and parameter estimation using double sided kernel }
 In Shaunak's thesis the parameter estimation relied on optimization of the the error using ridge regression. In this part we develop closed form deterministic expressions to bypass the ridge regression optimization which has an indefinite convergence rate. Using this method to estimate the parameters allows us to deploy this method in real time systems with time constraints on computation time. We understanding what \textit{linear identifiablilty} is and how it is related to algebraic parameter estimation.  
 
 %This part discusses algebraic parameter estimation employing \textit{repeated} integration of the system output. The parameter estimation is explained through an example of a general 2nd order system as shown in \textbf{reference: Fliess2004c}. But, before proceed to the development of the kernel, we must first understand \textit{linear identifiablilty}. This is an useful and important property for a model to estimate the parameters using a system of equations.
@@ -1082,77 +923,99 @@ where
 \item the $\det(P)$ $\neq$ $0$. 
 \item the entries of $P$ and $Q$ belong to the span of the field generated by $y(t)$ and $u(t)$, where $y(t)$ is the output and $u(t)$ is the input to the system.
 \end{itemize}
-With this in mind, let us consider the following 2nd order LTI system with input shown below:
+With this in mind, let us consider the following 4th order LTI system with input shown below:
 \begin{equation}\label{eqn.29}
 \begin{split}
-y^{(2)}(t)+a_{1}y^{(1)}(t)+a_{0}y(t) = b u(t) +A_{0}
+y^{(4)}(t)+a_{3}y^{(3)}(t)+a_{2}y^{(2)}(t)+a_{1}y^{(1)}(t)+a_{0}y(t) = b u(t) +A_{0}
 \end{split}
 \end{equation}
-Here $a_{1}$, $a_{0}$ are the parameters of the $A$ matrix, $b$ is the parameter of the input and $A_{0}$ is a constant load perturbation of an unknown magnitude where $A_{0}$ $\in$ $\mathrm{R}$.
+Here $a_{3}$, $a_{2}, a_{1}$, $a_{0}$ are the parameters of the $A$ matrix, $b$ is the parameter of the input and $A_{0}$ is a constant load perturbation of an unknown magnitude where $A_{0}$ $\in$ $\mathrm{R}$.
 \par Transforming the above equation \eqref{eqn.29} into the Laplace domain we get \eqref{eqn.30},
 \begin{equation}\label{eqn.30}
 \begin{split}
-s^2Y(s) - sy(0) - y^{(1)}(0) + a_{1}(sY(s)-y(0)) + a_{0}Y(s) = b U(s) + \frac{A_{0}}{s}
+s^4Y(s) - s^3y(0) - s^2y^{(1)}(0) - sy^{(2)}(0) - y^{(3)}(0) + & \\
+a_{3}(s^3Y(s) - s^2y(0) - sy^{(1)}(0) - y^{(2)}(0)) + & \\
+a_{2}(s^2Y(s) - sy(0) - y^{(1)}(0)) + a_{1}(sY(s)-y(0)) + & \\
+a_{0}Y(s) &= b U(s) + \frac{A_{0}}{s}
 \end{split}
 \end{equation}
 multiplying the above equation \eqref{eqn.30} by $s$ we get,
 \begin{equation}\label{eqn.31}
 \begin{split}
-s^3Y(s) - s^2y(0) - sy^{(1)}(0) + a_{1}(s^2Y(s)-sy(0)) + a_{0}sY(s) = bsU(s) + A_{0}
+s^5Y(s) - s^4y(0) - s^3y^{(1)}(0) - s^2y^{(2)}(0) - sy^{(3)}(0) + & \\
+a_{3}(s^4Y(s) - s^3y(0) - s^2y^{(1)}(0) - sy^{(2)}(0)) + & \\
+a_{2}(s^3Y(s) - s^2y(0) - ay^{(1)}(0)) + a_{1}(s^2Y(s)-sy(0)) + &\\
+sa_{0}Y(s) &= bs U(s) + A_{0}
 \end{split}
 \end{equation}
-We now differentiate the above equation \eqref{eqn.31} three times to eliminate the unknown parameter $A_{0}$ and the initial conditions $y(0)$, $y^{(1)}(0)$. We get,
+We now differentiate the above equation \eqref{eqn.31} five times to eliminate the unknown parameter $A_{0}$ and the initial conditions $y(0)$, $y^{(1)}(0), y^{(2)}(0)$, $y^{(3)}(0)$. We get,
 \begin{equation}\label{eqn.32}
 \begin{split}
-3b\frac{\mathrm{d}^2U(s)}{\mathrm{d}s^2} + bs\frac{\mathrm{d}^3U(s)}{\mathrm{d}s^3} & = 6Y(s) + 18s\frac{\mathrm{d}Y(s)}{\mathrm{d}s} + 9s^2\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + s^3\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} \, \\
-&\qquad{}+ 6a_{1}\frac{\mathrm{d}Y(s)}{\mathrm{d}s} + 6a_{1}s\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + a_{1}s^2\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3}\, \\ 
-&\qquad{}+ 3a_{0}\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + a_{0}s\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3}
+5b\frac{\mathrm{d}^4U(s)}{\mathrm{d}s^4} + bs\frac{\mathrm{d}^5U(s)}{\mathrm{d}s^5} & = 120Y(s) + 600s\frac{\mathrm{d}Y(s)}{\mathrm{d}s} + 600s^2\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + 200s^3\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} + 25s^4\frac{\mathrm{d}^4Y(s)}{\mathrm{d}s^4} + s^5 \frac{\mathrm{d}^5Y(s)}{\mathrm{d}s^5} \, \\
+&\qquad{} + a_3\bigg(120\frac{\mathrm{d}Y(s)}{\mathrm{d}s} + 240s\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + 120s^2\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} + 20s^3\frac{\mathrm{d}^4Y(s)}{\mathrm{d}s^4} + s^4 \frac{\mathrm{d}^5Y(s)}{\mathrm{d}s^5}\bigg) \, \\
+&\qquad{} + a_2\bigg(60\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + 60s\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} + 15s^2\frac{\mathrm{d}^4Y(s)}{\mathrm{d}s^4} + s^3\frac{\mathrm{d}^5Y(s)}{\mathrm{d}s^5} \bigg) \, \\  
+&\qquad{} + a_1\bigg(20\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} + 10s\frac{\mathrm{d}^4Y(s)}{\mathrm{d}s^4} + s^2\frac{\mathrm{d}^5Y(s)}{\mathrm{d}s^5} \bigg) \, \\
+&\qquad{} + a_0\bigg(5\frac{\mathrm{d}^4Y(s)}{\mathrm{d}s^4} + s\frac{\mathrm{d}^5Y(s)}{\mathrm{d}s^5} \bigg)
 \end{split}
 \end{equation}
-Multiplying both sides of the resulting expression by $s^-3$ we have,
+Multiplying both sides of the resulting expression by $s^{-5}$ we have,
 \begin{equation}\label{eqn.33}
 \begin{split}
-3s^{-3}b\frac{\mathrm{d}^2U(s)}{\mathrm{d}s^2} + bs^{-2}\frac{\mathrm{d}^3U(s)}{\mathrm{d}s^3} & = 6s^{-3}Y(s) + 18s^{-2}\frac{\mathrm{d}Y(s)}{\mathrm{d}s} + 9s^{-1}\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + \frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} \, \\
-&\qquad{}+ 6a_{1}s^{-3}\frac{\mathrm{d}Y(s)}{\mathrm{d}s} + 6a_{1}s^{-2}\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + a_{1}s^{-1}\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} \, \\ &\qquad{}+ 3a_{0}s^{-3}\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + a_{0}s^{-2}\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3}
+5s^{-5}b\frac{\mathrm{d}^4U(s)}{\mathrm{d}s^4} + bs^{-4}\frac{\mathrm{d}^5U(s)}{\mathrm{d}s^5} & = 120s^{-5}Y(s) + 600s^{-4}\frac{\mathrm{d}Y(s)}{\mathrm{d}s} + 600s^{-3}\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + 200s^{-2}\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} + 25s^{-1}\frac{\mathrm{d}^4Y(s)}{\mathrm{d}s^4} + \frac{\mathrm{d}^5Y(s)}{\mathrm{d}s^5} \, \\
+&\qquad{} + a_3\bigg(120s^{-5}\frac{\mathrm{d}Y(s)}{\mathrm{d}s} + 240s^{-4}\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + 120s^{-3}\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} + 20s^{-2}\frac{\mathrm{d}^4Y(s)}{\mathrm{d}s^4} + s^{-1} \frac{\mathrm{d}^5Y(s)}{\mathrm{d}s^5}\bigg) \, \\
+&\qquad{} + a_2\bigg(60s^{-5}\frac{\mathrm{d}^2Y(s)}{\mathrm{d}s^2} + 60s^{-4}\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} + 15s^{-3}\frac{\mathrm{d}^4Y(s)}{\mathrm{d}s^4} + s^{2}\frac{\mathrm{d}^5Y(s)}{\mathrm{d}s^5} \bigg) \, \\  
+&\qquad{} + a_1\bigg(20s^{-5}\frac{\mathrm{d}^3Y(s)}{\mathrm{d}s^3} + 10s^{-4}\frac{\mathrm{d}^4Y(s)}{\mathrm{d}s^4} + s^{-3}\frac{\mathrm{d}^5Y(s)}{\mathrm{d}s^5} \bigg) \, \\
+&\qquad{} + a_0\bigg(5s^{-5}\frac{\mathrm{d}^4Y(s)}{\mathrm{d}s^4} + s^{-4}\frac{\mathrm{d}^5Y(s)}{\mathrm{d}s^5} \bigg)
 \end{split}
 \end{equation}
-Transforming the above expression back to the time domain using the guidelines in \textbf{(Reference state estimation section)(Go over equations again)} we get the following expression:
+Transforming the above expression back to the time domain using the guidelines in \textbf{(Reference state estimation section)} we get the following expression:
 \begin{equation}\label{eqn.34}
 \begin{split}
-b\big(3 \int\limits^{(3)} t^2 u(t) \mathrm{d}t - \int\limits^{(2)} t^3 u(t) \mathrm{d}t\big) & = 6\int\limits^{(3)}y(t) \mathrm{d}t - 18\int\limits^{(2)}ty(t)\mathrm{d}t + 9\int t^2y(t)\mathrm{d}t - t^3y(t)  \, \\
-&\qquad{}+ a_{1}\big(-6\int\limits^{(3)} ty(t)\mathrm{d}t + 6\int\limits^{(2)}t^2y(t) \mathrm{d}t + \int t^3y(t)\mathrm{d}t\big) \, \\ 
-&\qquad{}+ a_{0}\big(3\int\limits^{(3)}t^2y(t)\mathrm{d}t + \int\limits^{(2)}t^3y(t)\mathrm{d}t\big)
+b\big(5 \int\limits^{(5)} t^4 u(t) \mathrm{d}t - \int\limits^{(4)} t^5 u(t) \mathrm{d}t\big) & = 120\int\limits^{(5)}y(t) \mathrm{d}t - 600\int\limits^{(4)}ty(t)\mathrm{d}t + 600\int\limits^{(3)}t^2y(t)\mathrm{d}t - 200\int\limits^{(2)}t^3y(t)\mathrm{d}t + 25\int t^4y(t)\mathrm{d}t- t^5y(t)  \, \\
+&\qquad{}+ a_{3}\bigg(-120\int\limits^{(5)}ty(t) \mathrm{d}t + 240\int\limits^{(4)}t^2y(t)\mathrm{d}t - 120\int\limits^{(3)}t^3y(t)\mathrm{d}t + 20\int\limits^{(2)}t^4y(t)\mathrm{d}t - \int t^5y(t)\mathrm{d}t\bigg)  \, \\ 
+&\qquad{}+ a_{2}\bigg(60\int\limits^{(5)}t^2y(t) \mathrm{d}t - 60\int\limits^{(4)}t^3y(t)\mathrm{d}t + 15\int\limits^{(3)}t^4y(t)\mathrm{d}t - \int\limits^{(2)} t^5y(t)\mathrm{d}t \bigg)  \, \\
+&\qquad{} a_{1}\bigg(-20\int\limits^{(5)}t^3y(t) \mathrm{d}t + 10\int\limits^{(4)}t^4y(t)\mathrm{d}t - \int\limits^{(3)}t^5y(t)\mathrm{d}t \bigg)  \, \\
+&\qquad{}+ a_{0}\bigg(5\int\limits^{(5)}t^4y(t) \mathrm{d}t - \int\limits^{(4)}t^5y(t)\mathrm{d}t \bigg)
 \end{split}
 \end{equation}
 this can be expressed as relation of the form
-\begin{equation}\label{eqn.35}
-\begin{split}
-a_{0}\pi_{1}(t) + a_{1}\pi_{2}(t) + b\pi_{3}(t) = q(t)
-\end{split}
+\begin{equation}
+a_{0}\pi_{0}(t) + a_{1}\pi_{1}(t) + a_{2}\pi_{2}(t) + a_{3}\pi_{3}(t) + b\pi_{4}(t) = q(t)
 \end{equation}
 with
-\begin{align*}
-\pi_{1}(t) = \bigg[3\int\limits^{(3)}t^2y(t)\mathrm{d}t + \int\limits^{(2)}t^3y(t)\mathrm{d}t\bigg]
-\end{align*}
-\begin{align*}
-\pi_{2}(t) = \bigg[-6\int\limits^{(3)} ty(t)\mathrm{d}t + 6\int\limits^{(2)}t^2y(t) \mathrm{d}t + \int t^3y(t)\mathrm{d}t\bigg]
-\end{align*}
-\begin{align*}
-\pi_{3} (t) = \bigg[3 \int\limits^{(3)} t^2 u(t) \mathrm{d}t - \int\limits^{(2)} t^3 u(t) \mathrm{d}t \bigg]
-\end{align*}
-\begin{align*}
-q(t) = \bigg[ 6\int\limits^{(3)}y(t) \mathrm{d}t - 18\int\limits^{(2)}ty(t)\mathrm{d}t + 9\int t^2y(t)\mathrm{d}t - t^3y(t) \bigg]
-\end{align*}
-\par Now, in order to identify the parameters $a_{1}$, $a_{0}$ and $b$, we need to ensure that the above system is \textit{linearly identifiable}. We need a system of linear equations to make them \textit{linearly identifiable}. And thus, we integrate the \eqref{eqn.35} one time and two times with respect to $t$. This gives us the following system of linear equation for the estimation of the unknown parameters $a_{1}$, $a_{0}$ and $b$.
-\begin{equation}
+\begin{equation*}
+\pi_{0}(t) = \bigg[5\int\limits^{(5)}t^4y(t) \mathrm{d}t - \int\limits^{(4)}t^5y(t)\mathrm{d}t\bigg]
+\end{equation*}
+\begin{equation*}
+\pi_{1}(t) = \bigg[-20\int\limits^{(5)}t^3y(t) \mathrm{d}t + 10\int\limits^{(4)}t^4y(t)\mathrm{d}t - \int\limits^{(3)}t^5y(t)\mathrm{d}t\bigg]
+\end{equation*}
+\begin{equation*}
+\pi_{2} (t) = \bigg[60\int\limits^{(5)}t^2y(t) \mathrm{d}t - 60\int\limits^{(4)}t^3y(t)\mathrm{d}t + 15\int\limits^{(3)}t^4y(t)\mathrm{d}t - \int\limits^{(2)} t^5y(t)\mathrm{d}t \bigg]
+\end{equation*}
+\begin{equation*}
+\pi_{3}(t) = \bigg[-120\int\limits^{(5)}ty(t) \mathrm{d}t + 240\int\limits^{(4)}t^2y(t)\mathrm{d}t - 120\int\limits^{(3)}t^3y(t)\mathrm{d}t + 20\int\limits^{(2)}t^4y(t)\mathrm{d}t - \int t^5y(t)\mathrm{d}t \bigg]
+\end{equation*}
+\begin{equation*}
+\pi_{4}(t) = \bigg[5 \int\limits^{(5)} t^4 u(t) \mathrm{d}t - \int\limits^{(4)} t^5 u(t) \mathrm{d}t \bigg]
+\end{equation*}
+\begin{equation*}
+q(t) = \bigg[120\int\limits^{(5)}y(t) \mathrm{d}t - 600\int\limits^{(4)}ty(t)\mathrm{d}t + 600\int\limits^{(3)}t^2y(t)\mathrm{d}t - 200\int\limits^{(2)}t^3y(t)\mathrm{d}t + 25\int t^4y(t)\mathrm{d}t- t^5y(t) \bigg]
+\end{equation*}
+
+\par Now, in order to identify the parameters $a_{0}$, $a_{1}$, $a_{2}$, $a_{3}$ and $b$, we need to ensure that the above system is \textit{linearly identifiable}. We need a system of linear equations to make them \textit{linearly identifiable}. And thus, we integrate the \eqref{eqn.35} one time and two times with respect to $t$. This gives us the following system of linear equation for the estimation of the unknown parameters $a_{0}$, $a_{1}$, $a_{2}$, $a_{3}$ and $b$.
+\begin{equation}\label{eqn:98}
 \begin{bmatrix}
-P_{11}(t) & P_{12}(t) & P_{13}(t) \\
-P_{21}(t) & P_{22}(t) & P_{23}(t) \\
-P_{31}(t) & P_{32}(t) & P_{33}(t) \\
+P_{11}(t) & P_{12}(t) & P_{13}(t) & P_{14}(t) & P_{15}(t) \\
+P_{21}(t) & P_{22}(t) & P_{23}(t) & P_{24}(t) & P_{25}(t)) \\
+P_{31}(t) & P_{32}(t) & P_{33}(t) & P_{34}(t) & P_{35}(t) \\
+P_{41}(t) & P_{42}(t) & P_{43}(t) & P_{44}(t) & P_{45}(t) \\
+P_{51}(t) & P_{52}(t) & P_{53}(t) & P_{54}(t) & P_{55}(t) \\
 \end{bmatrix}
 \begin{bmatrix}
 a_{0e} \\
 a_{1e} \\
+a_{2e} \\
+a_{3e} \\
 b_{e} \\
 \end{bmatrix}
 = 
@@ -1160,29 +1023,41 @@ b_{e} \\
 Q_{1}(t) \\
 Q_{2}(t) \\
 Q_{3}(t) \\
+Q_{4}(t) \\
+Q_{5}(t) \\
 \end{bmatrix}
 \end{equation}
 with 
 \begin{align*}
-P_{11}(t) = \pi_{1}(t), \; P_{12}(t) = \pi_{2}(t), \; P_{13} = \pi_{3}(t)
+P_{11}(t) = \pi_{0}(t), \; P_{12}(t) = \pi_{1}(t), \; P_{13} = \pi_{2}(t), \; P_{14}(t) = \pi_{3}(t), \; P_{15} = \pi_{4}(t)
 \end{align*}
 \begin{align*}
-P_{21}(t) = \int \pi_{1}(t) \mathrm{d}t, \; P_{22}(t) = \int \pi_{2}(t) \mathrm{d}t, \; P_{23} = \int \pi_{3}(t) \mathrm{d}t
+P_{11}(t) = \pi_{0}(t), \; P_{12}(t) = \pi_{1}(t), \; P_{13} = \pi_{2}(t), \; P_{14}(t) = \pi_{3}(t), \; P_{15} = \pi_{4}(t)
 \end{align*}
 \begin{align*}
-P_{31}(t) = \int\limits^{(2)} \pi_{1}(t) \mathrm{d}t, \; P_{32}(t) = \int\limits^{(2)} \pi_{2}(t) \mathrm{d}t, \; P_{33} = \int\limits^{(2)} \pi_{3}(t)\mathrm{d}t
+P_{21}(t) = \int \pi_{0}(t) \mathrm{d}t, \; P_{22}(t) = \int \pi_{1}(t) \mathrm{d}t, \; P_{23} = \int \pi_{2}(t) \mathrm{d}t, \; P_{24}(t) = \int \pi_{3}(t) \mathrm{d}t, \; P_{25} = \int \pi_{4}(t) \mathrm{d}t
+\end{align*}
+\begin{align*}
+P_{31}(t) = \int\limits^{(2)} \pi_{0}(t) \mathrm{d}t, \; P_{32}(t) = \int\limits^{(2)} \pi_{1}(t) \mathrm{d}t, \; P_{33} = \int\limits^{(2)} \pi_{2}(t) \mathrm{d}t, \; P_{34}(t) = \int\limits^{(2)} \pi_{3}(t) \mathrm{d}t, \; P_{35} = \int\limits^{(2)} \pi_{4}(t) \mathrm{d}t
 \end{align*}
 and
 \begin{align*}
-Q_{1}(t) = q(t), \; Q_{2}(t) = \int q(t) \mathrm{d}t, \; Q_{3} = \int\limits^{(2)} q(t) \mathrm{d}t
+P_{41}(t) = \int\limits^{(3)} \pi_{0}(t) \mathrm{d}t, \; P_{42}(t) = \int\limits^{(3)} \pi_{1}(t) \mathrm{d}t, \; P_{43} = \int\limits^{(3)} \pi_{2}(t) \mathrm{d}t, \; P_{44}(t) = \int\limits^{(3)} \pi_{3}(t) \mathrm{d}t, \; P_{45} = \int\limits^{(3)} \pi_{4}(t) \mathrm{d}t
+\end{align*}
+\begin{align*}
+P_{51}(t) = \int\limits^{(4)} \pi_{0}(t) \mathrm{d}t, \; P_{52}(t) = \int\limits^{(4)} \pi_{1}(t) \mathrm{d}t, \; P_{53} = \int\limits^{(4)} \pi_{2}(t) \mathrm{d}t, \; P_{54}(t) = \int\limits^{(4)} \pi_{3}(t) \mathrm{d}t, \; P_{55} = \int\limits^{(4)} \pi_{4}(t) \mathrm{d}t
+\end{align*}
+and
+\begin{align*}
+Q_{1}(t) = q(t), \; Q_{2}(t) = \int q(t) \mathrm{d}t, \; Q_{3} = \int\limits^{(2)} q(t) \mathrm{d}t, \; Q_{4}(t) = \int\limits^{(3)} q(t) \mathrm{d}t, \; Q_{5} = \int\limits^{(4)} q(t) \mathrm{d}t
 \end{align*}
 Using the above system of equations, we can estimate the unknown parameters while at the same time due to the low pass filtering property, the noise can be alleviated.\\
 
 
-An alternate approach can be used which is developed by \textbf{Kumar's thesis}. 
+An alternate approach can be used to obtain equations in the form of \eqref{eqn:98} from the kernel expressions. This approach was used in \textbf{Kumar's thesis} for a third order system. We develop the parameter estimation expressions using the double sided kernel for fourth order systems below. 
 
 
-Consider a third order linear time invariant system whose characteristic polynomial is as given below:
+Consider a fourth order linear time invariant system whose characteristic polynomial is as given below:
 \begin{equation}\label{eqn.100}
 y^{(4)}(t) + a_{3}y^{(3)}(t) + a_{2}y^{(2)}(t) + a_{1}y^{(1)}(t) + a_{0}y(t) = 0
 \end{equation}
@@ -1362,7 +1237,7 @@ a_{0} V_{16} + a_{1}V_{17} + a_{2}V_{18} + a_{3}V_{19} = -V_{20}
 \begin{equation}\label{eqn.129.5}
 a_{0} V_{21} + a_{1}V_{22} + a_{2}V_{23} + a_{3}V_{24} = -V_{25}
 \end{equation}
-\par The above set of simultaneous linear equations can be expressed in the form of \eqref{28.1} as a system of matrices as follows,
+\par The above set of simultaneous linear equations can be expressed in the form of \eqref{eqn:98} as a system of matrices as follows,
 \begin{equation}\label{eqn.130}
 \begin{bmatrix}
 	V_{6}&V_{7}&V_{8}&V_{9}\\
@@ -1526,6 +1401,166 @@ How are these properties discretized and what libraries and functions are used? 
 \label{quad_red_balls}
 \end{figure}
 
+\subsubsection{Computational implementation of the kernel estimation}
+The double sided kernel method was introduced in [First Debarshi paper] where the expression for estimate value at a particular instant $t$, denoted by $y_E(t)$ from the measured value $y_M(t)$ is given by the Equation (\ref{y_E}). 
+
+\begin{equation}
+\begin{split}
+y_E(t) = \int\limits_{a}^{b}K(t,\tau) y_M(\tau)\, \mathrm{d}\tau
+\end{split}
+\label{y_E}
+\end{equation}
+\begin{equation}
+K(t,\tau) \triangleq \left\{
+\begin{array}{lr}
+\frac{1}{[(t-a)^4+(b-t)^4])} K_{F}(t,\tau) & for \quad \tau \le t\\
+\frac{1}{[(t-a)^4+(b-t)^4])} K_{B}(t,\tau) & for \quad \tau > t
+\end{array}
+\right.
+\label{K}
+\end{equation}
+\begin{equation}\label{Kf}
+\begin{split}
+	& K_{F,y}(t,\tau)\\
+	&=\bigg[16(\tau-a)^{3}-a_3(\tau-a)^{4}\bigg]\\
+	&+(t-\tau)\bigg[-72(\tau-a)^2 + 12a_3(\tau-a)^3 - a_2(\tau-a)^4\bigg]\\
+	&+\frac{(t-\tau)^2}{2}\bigg[96(\tau-a) - 36a_3(\tau-a)^2 + 8a_2(\tau-a)^3 -a_1(\tau-a)^4\bigg]\\
+	&+\frac{(t-\tau)^3}{6}\bigg[-24 + 24a_3(\tau-a) - 12a_2(\tau-a)^2 + 4a_1(\tau-a)^3 - a_0(\tau-a)^4\bigg]	
+\end{split}
+\end{equation}
+\begin{equation}\label{eqn.73}
+\begin{split}
+	&K_{B,y}(t,\tau)\\
+	&=\bigg[16(b-\tau)^{3} + a_3(b-\tau)^{4}\bigg]\\
+	&+(t-\tau)\bigg[72(b-\tau)^{2} + 12a_3(b-\tau)^{3} + a_2(b-\tau)^{4}\bigg]\\
+	&+\frac{(t-\tau)^{2}}{2}\bigg[96(b-\tau)+36a_3(b-\tau)^{2} + 8a_2(b-\tau)^{3} + a_1(b-\tau)^{4}\bigg]\\
+	&+\frac{(t-\tau)^{3}}{6}\bigg[24+24a_3(b-\tau)+12a_2(b-\tau)^{2}+4a_1(b-\tau)^{3}+a_0(b-\tau)^{4}\bigg]
+\end{split}
+\end{equation}
+
+At the moment we focus on the Forward Kernel given by the Equation (\ref{Kf}).This expression is now modified to reduce computational complexities by working under the following assumptions:
+\begin{enumerate}
+\item A sliding window approach is used
+\item Length of the sliding window is fixed i.e. $(b-a)=\textrm{constant}$
+\item The relative position of the instant, $(t)$,  at which the estimate is to be obtained is fixed with respect to $a\textrm{ and }b \textrm{ i.e. }$ $$ (t-a)= a' \textrm{ constant, and } (b-t)=b'\textrm{ constant}$$  
+\end{enumerate}
+Equation (\ref{Kf}) is broken down as:
+
+\begin{equation}
+K_{F}(t,\tau) \triangleq \quad 
+\begin{bmatrix}
+0  &  0  &   0   &  16    &   a_3   \\
+0  &  0  &   72   & 12a_3  &   a_2  \\
+0  &  96 & 36a_3 &  8a_2  &   a_1   \\
+24 &  6  & 12a_2 &  4a_1   &   a_0  
+\end{bmatrix}
+\begin{bmatrix}
+     - 1       \\
+ (\tau - a)    \\
+-(\tau - a)^2  \\
+ (\tau - a)^3  \\
+-(\tau - a)^4  \\
+\end{bmatrix}
+\begin{bmatrix}
+1  & (t-\tau) & \frac{(t-\tau)^2}{2} & \frac{(t-\tau)^6}{6}
+\end{bmatrix}
+\label{Kf_2}
+\end{equation}
+\begin{equation}
+= [A][a][t] 
+\end{equation}
+
+The matrix $[A]$ is a constant as the parameters $a_0, a_1, a_2$ are not changing while the estimation is being performed. The matrices $[a] \textrm{ and } [t]$ are functions of $(\tau-a) \textrm{ and } (t-\tau)$. These values are then dependent on the relative position in the window. This allows us to calculate the value of the Forward Kernel at each relative point in the window. Once this is computed it need not be computed again. 
+
+\begin{figure}[H]
+\begin{centering}
+	{
+		\begin{tikzpicture}
+			\draw[|-|,semithick] (0,0) -- (10,0);
+			\draw[|-,semithick] (5.3,0) -- (3.4,0);
+			\draw[|-,semithick] (8.7,0) -- (8.8,0);
+			\draw (0,-0.5) node {$a$};
+			\draw (10,-0.5) node {$b$};
+			\draw (5.3,-0.5) node {$\tau$};
+			\draw (8.7,-0.5) node {$t$};
+				
+			\draw (-2, 0) node {Values};
+			\draw[-,dashed] (-1,0.5) -- (-1,-4);
+		
+			\draw (-2,-1.5) node {$(\tau-a)|^{a}_{t}$};	
+			\draw (0,-1.5) node {$0$};	
+			\draw (1,-1.5) node {$T$};
+			\draw (2,-1.5) node {$2T$};
+			\draw (3,-1.5) node {$3T$};
+			\draw (8.7,-1.5) node {$(t-a)$};
+	
+			\draw (-2,-2.5) node {$(t-\tau)|^{a}_{t}$};	
+			\draw (0,-2.5) node {$(t-a)$};	
+			\draw (3,-2.5) node {$(t-a)-3T$};
+			\draw (8.7,-3) node {$0$};	
+		\end{tikzpicture}
+		\caption{Diagram showing $\tau -a$ and $t-\tau$ remain constant with respect to the position in the sliding window as time progresses}
+		\label{sliding_array}
+	}
+\end{centering}
+\end{figure}
+
+The Forward Kernel as a function of position in sliding window array can be written as:
+\begin{equation}
+K_{F}(i) \triangleq \quad
+\begin{bmatrix}
+0  &  0  &   0   &  16    &   a_3   \\
+0  &  0  &   72   & 12a_3  &   a_2  \\
+0  &  96 & 36a_3 &  8a_2  &   a_1   \\
+24 &  6  & 12a_2 &  4a_1   &   a_0  
+\end{bmatrix}
+\begin{bmatrix}
+  -1     \\
+ (iT)    \\
+-(iT)^2  \\
+ (iT)^3  \\
+-(iT)^4  \\
+\end{bmatrix}
+\begin{bmatrix}
+1  & \big((n-i)T\big) & \frac{\Big(\big((n-i)T\big)\Big)^2}{2} & \frac{\Big(\big((n-i)T\big)\Big)^3}{6}
+\end{bmatrix}
+\label{Kfi}
+\end{equation}
+where,
+\begin{subequations}
+\begin{align}
+a+ (\texttt{ number of samples in window * } T)&= b \\ 
+a+ (\texttt{t position in window * } T) &= t \\
+a+ (\texttt{i}*T) &= \tau
+\end{align}
+\end{subequations}
+
+The integrand in the forward estimate of $y$ which was previously represented as
+$K_F(t,\tau) y_M(\tau)$, 
+(in the expression $y_{FE}(t) =\int\limits_{a}^{b}K_F(t,\tau) y_M(\tau)\, \mathrm{d}\tau $ ), 
+can be written as 
+$$ \vec{y}_{KFM} = [K_F] \textrm{ } \vec{y}_M(i)$$
+where 
+\begin{equation*}
+[K_F] =
+\begin{bmatrix}
+    K_F(1) &    0   &   0    & \dots  &    0    & \dots  &   0 \\
+      0    & K_F(2) &   0    & \dots  &    0    & \dots  &   0 \\
+    \vdots & \vdots & \vdots & \ddots & \vdots  & \dots  &   0 \\
+      0    &   0    &   0    & \dots  &  K_F(i) & \dots  &   0 \\ 
+    \vdots & \vdots & \vdots & \vdots & \vdots  & \ddots &   0 \\
+      0    &   0    &   0    & \dots  &    0    & \dots  &   K_F(n) \\
+\end{bmatrix}
+\end{equation*}
+and $K_F(i)$ is given by Equation (\ref{Kfi})
+
+It can be seen that, compared to the previous scheme where the complete Kernel was calculated and derived in each iteration, we just have to compute the Forward Kernel matrix once and then linearly multiply with the incoming measurement vector $\vec{y}_M$to give the vector $\vec{y}_{KFM}$.
+It is hoped that this significant reduction in computation should enable the algorithm to be implemented in real time. 
+
+The above method can be applied to the Backward Kernel and result in a Double Sided Kernel Matrix which is a constant matrix.
+
+Furthermore, since the measurement vector is anticipated to be noisy and discrete; sophisticated algorithms to compute integrals need not be used. It is believed that Trapeziodal method for integrating should yield satisfactory results. What remains to be decided is the relative position of the instant $t$ with respect to sliding window. One factor which can be used to decide is the allowable latency in detection, i.e. $y_M(b)$ represents the latest measurement in real time and a delay of $(b-t)$ is induced by this estimator.
+
 \section{Control Algorithms}
 There are two control algorithms used. Back stepping control algorithm for position control and Sliding Mode control algorithm for attitude control. The attitude control requires a more robust controller and hence the SMC algorithm is preferred. 
 
@@ -1556,7 +1591,40 @@ To exhaustively compare the three different observers, the oberservs were implem
 	\caption{Block diagram of different quadcopter components in simulation}	
 	\label{block_simulation}
 \end{figure}
-Figure \ref{block_simulation} gives a general idea of how the different components of the quadcopter are linked in simulation. The four different disturbances are given by the equations, \eqref{eq:dist_1}, \eqref{eq:dist_2}, \eqref{eq:dist_3} and \eqref{eq:dist_4}; while the quadcopter dynamics are modelled on based on the equations presented in \eqref{eq:quad_dyanmics}. The KDO is modeled based on the equations described in \eqref{eq:KDO} and similarly the NDO and STO are modeled based on \textbf{INSERT EQUATIONS HERE}. The attitude controller and position controller compute the signals based on the equations \textbf{INSERT EQUATIONS HERE}. The desired trajectory is given by piecewise functions \textbf{FIND THE DESIRED TRAJ EQUATIONS}
+Figure \ref{block_simulation} gives a general idea of how the different components of the quadcopter are linked in simulation. The four different disturbances are given by the equations, \eqref{eq:dist_1}, \eqref{eq:dist_2}, \eqref{eq:dist_3} and \eqref{eq:dist_4}; while the quadcopter dynamics are modelled on based on the equations presented in \eqref{eq:quad_dyanmics}. The KDO is modeled based on the equations described in \eqref{eq:KDO} and similarly the NDO and STO are modeled based on \textbf{INSERT EQUATIONS HERE}. The attitude controller and position controller compute the signals based on the equations \textbf{INSERT EQUATIONS HERE}. The desired trajectory are given by equations, \eqref{eqn:x_traj} - \eqref{eqn:z_traj}. 
+
+\begin{equation}\label{eqn:x_traj}
+x=
+\begin{cases} 
+	  0 & t=0 \\
+      0.6\big(\frac{t}{10}\big)^2 - 0.4\big(\frac{t}{10}\big)^3 & 0\leq t\leq 10 \\
+      0.2 & 10\leq t\leq 20 \\
+      0.2 + 0.3\big(\frac{t-30}{10}\big)^2 - 0.2\big(\frac{t-30}{10}\big)^3 & 20\leq t\leq 30 \\
+      0.3 & 30\leq t\leq 50 \\
+      0.3 - 0.3\big(\frac{t-50}{10}\big)^2 -  0.2\big(\frac{t-50}{10}\big)^3 & 50\leq t\leq 60 \\
+      0.2 & 60\leq t\leq 100
+\end{cases}
+\end{equation}
+\begin{equation}\label{eqn:y_traj}
+y=
+\begin{cases} 
+	  0 & t=0 \\
+      0.6\big(\frac{t}{10}\big)^2 - 0.4\big(\frac{t}{10}\big)^3 & 0\leq t\leq 10 \\
+      0.2 & 10\leq t\leq 30 \\
+      0.2 + 0.3\big(\frac{t-30}{10}\big)^2 - 0.2\big(\frac{t-30}{10}\big)^3 & 30\leq t\leq 40 \\
+      0.3 & 40\leq t\leq 50 \\
+      0.3 - 0.3\big(\frac{t-50}{10}\big)^2 -  0.2\big(\frac{t-50}{10}\big)^3 & 50\leq t\leq 60 \\
+      0.2 & 60\leq t\leq 100
+\end{cases}
+\end{equation}
+\begin{equation}\label{eqn:z_traj}
+z=
+\begin{cases} 
+	  0 & t=0 \\
+      0.6\big(\frac{t}{10}\big)^2 - 0.4\big(\frac{t}{10}\big)^3 & 0\leq t\leq 10 \\
+      0.2 & 10\leq t\leq 100
+\end{cases}
+\end{equation}
 
 \subsubsection{Disturbance Model: Chaotic 1}
 This section presents results of simulations carried under a chaotic system. The disturbances are of the form,
